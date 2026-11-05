@@ -6,6 +6,7 @@ Remote settings (MLFLOW_TRACKING_URI / _USERNAME / _PASSWORD) come from environm
 variables, loaded from the git-ignored .env file; nothing secret is written in code.
 """
 import argparse
+import sys
 import os
 from pathlib import Path
 
@@ -21,6 +22,9 @@ from keras.datasets import fashion_mnist
 HERE = Path(__file__).resolve().parent
 LOCAL_URI = f"sqlite:///{(HERE / 'mlflow.db').as_posix()}"
 SEED = 42
+
+# MLflow prints an emoji link when a run ends; a cp1252 Windows console would crash on it
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
 def pick_tracking(remote: bool) -> str:
