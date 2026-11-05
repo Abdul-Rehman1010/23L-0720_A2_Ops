@@ -24,7 +24,7 @@ def build_cnn(img_size: int = IMG_SIZE, dropout: float = 0.4) -> Model:
     x = layers.Rescaling(1 / 255.0, name="rescale")(x)
     for i, filters in enumerate((32, 64, 128), start=1):
         x = layers.Conv2D(filters, 3, padding="same", use_bias=False, name=f"conv{i}")(x)
-        x = layers.BatchNormalization(name=f"bn{i}")(x)
+        x = layers.BatchNormalization(momentum=0.9, name=f"bn{i}")(x)  # 0.99 is too slow for ~22 steps/epoch
         x = layers.ReLU(name=f"relu{i}")(x)
         x = layers.MaxPooling2D(name=f"pool{i}")(x)
     x = layers.GlobalAveragePooling2D(name="gap")(x)

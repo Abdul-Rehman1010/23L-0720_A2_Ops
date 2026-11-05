@@ -7,6 +7,7 @@ Only the train and validation splits are used here; the test split is reserved f
 import argparse
 import json
 import shutil
+import sys
 
 import keras
 import mlflow
@@ -52,6 +53,7 @@ def fit_stage(model, train_ds, val_ds, epochs, patience, ckpt, extra=()):
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")   # MLflow prints an emoji link; cp1252 consoles crash on it
     args = parse_args()
     config.load_env()
     keras.utils.set_random_seed(args.seed)
@@ -76,7 +78,7 @@ def main():
     if tracking:
         mlflow.set_experiment(config.EXPERIMENT)
         if args.tracking == "autolog":
-            mlflow.tensorflow.autolog()
+            mlflow.tensorflow.autolog(log_models=False)   # DagsHub rejects autolog's own model upload (BAD_REQUEST)
         run = mlflow.start_run(run_name=args.name)
         commit, dirty = config.git_commit()
         mlflow.set_tags({"git_commit": commit, "git_dirty": str(dirty), "dvc_data_md5": config.dvc_data_md5(),
@@ -140,4 +142,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BaseException:
+        if mlflow.active_run():
+            mlflow.end_run("FAILED")
+        raise
