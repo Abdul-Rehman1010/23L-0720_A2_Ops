@@ -1,0 +1,19 @@
+# environments and secrets
+.venv/
+.env
+.dvc/config.local
+# data (tracked by DVC)
+/data/raw
+/data/clean
+/data/_download
+# models fetched from the registry
+/models/*
+!/models/.gitkeep
+# tracking / caches
+mlruns/
+mlartifacts/
+*.db
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
