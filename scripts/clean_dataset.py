@@ -2,26 +2,18 @@
 
 - drops unreadable files and exact duplicates (keeps the first copy; a hash that appears in
   both classes is dropped entirely because its label is ambiguous)
-- applies EXIF orientation, flattens transparency onto white, converts to RGB
-- caps the longest side at MAX_SIDE (never upscales), keeps aspect ratio
+- cleaning and the 512 px cap come from visionguard.preprocessing.clean_pil (shared with serving)
 - writes lossless PNG named by content hash, so the container format carries no class signal
 """
 import argparse
+import sys
 from pathlib import Path
 
 import pandas as pd
-from PIL import Image, ImageOps
+from PIL import Image
 
-MAX_SIDE = 512
-
-
-def to_rgb(im: Image.Image) -> Image.Image:
-    im = ImageOps.exif_transpose(im)
-    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
-        im = im.convert("RGBA")
-        bg = Image.new("RGBA", im.size, (255, 255, 255, 255))
-        im = Image.alpha_composite(bg, im)
-    return im.convert("RGB")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from visionguard.preprocessing import MAX_SIDE, clean_pil  # noqa: E402
 
 
 def main():
@@ -42,10 +34,7 @@ def main():
     rows = []
     for r in df.itertuples():
         with Image.open(raw / r.path) as im:
-            im = to_rgb(im)
-            if max(im.size) > args.max_side:
-                scale = args.max_side / max(im.size)
-                im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
+            im = clean_pil(im, args.max_side)
             dest = out / r._2 / f"{r.sha256}.png"
             dest.parent.mkdir(parents=True, exist_ok=True)
             im.save(dest, format="PNG", optimize=False)
