@@ -3,11 +3,12 @@ import argparse
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import NullFormatter
 import numpy as np
 import pandas as pd
+from matplotlib.ticker import NullFormatter
 from PIL import Image
 
 COLORS = {"ai": "#d95f02", "real": "#1b9e77"}

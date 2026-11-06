@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Prediction history</h1>
+  <p class="lead">Every verdict is recorded: what was decided, when, by which model and how confidently. {{ total }} record{{ '' if total == 1 else 's' }} in total.</p>
+</section>
+
+<section class="card flush">
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="history">
+      <thead>
+        <tr>
+          <th>#</th><th>When</th><th>File</th><th>Verdict</th><th class="num">Confidence</th>
+          <th class="num">P(AI)</th><th>Model</th><th>Mode</th><th class="num">Latency</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td class="nowrap">{{ r.created_at | utc }}</td>
+          <td class="file" title="{{ r.original_filename }}">{{ r.original_filename }}</td>
+          <td><span class="badge badge-{{ r.label }}">{% if r.label == 'ai' %}AI-generated{% else %}Real{% endif %}</span></td>
+          <td class="num">{{ r.confidence | pct }}</td>
+          <td class="num">{{ '%.3f'|format(r.prob_ai) }}</td>
+          <td class="nowrap">v{{ r.model_version }}<span class="muted small"> · threshold {{ '%.3f'|format(r.threshold) }}</span></td>
+          <td>{{ r.inference_mode }}</td>
+          <td class="num">{{ '%.0f'|format(r.latency_ms) }} ms</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <p>No predictions yet.</p>
+    <a class="btn" href="{{ url_for('main.index') }}">Analyse your first image</a>
+  </div>
+  {% endif %}
+</section>
+
+{% if pages > 1 %}
+<nav class="pager" aria-label="Pages">
+  {% if page_no > 1 %}<a href="{{ url_for('main.history', page=page_no - 1) }}">← Newer</a>{% else %}<span></span>{% endif %}
+  <span class="muted">Page {{ page_no }} of {{ pages }}</span>
+  {% if page_no < pages %}<a href="{{ url_for('main.history', page=page_no + 1) }}">Older →</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

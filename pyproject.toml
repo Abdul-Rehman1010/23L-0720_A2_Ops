@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = [".venv", "data", "runs", "mlruns"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+# E501 (long lines) is left to the reader: several tables and f-strings are clearer on one line
+# E702 / E741: style-only rules; the existing one-line statements and short names (l, y, p) are deliberate
+ignore = ["E501", "E702", "E741"]
+# E402: scripts add the repo root to sys.path before importing project modules
+per-file-ignores = { "scripts/*" = ["E402"], "labs/*" = ["E402"] }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

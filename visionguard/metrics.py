@@ -4,6 +4,7 @@ Positive class = AI-generated (label 1). A false positive is therefore a REAL ph
 a false negative is a FAKE image passed as real.
 """
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np

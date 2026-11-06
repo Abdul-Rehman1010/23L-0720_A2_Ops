@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+{% if not saved %}
+<p class="banner warn" role="alert">The verdict below is valid, but it could not be saved to the history.</p>
+{% endif %}
+
+<section class="card result result-{{ result.label }}">
+  <div class="thumb"><img src="{{ thumb }}" alt="Preview of the uploaded image"></div>
+  <div class="verdict">
+    <p class="eyebrow">Verdict</p>
+    <h1>{% if result.label == 'ai' %}Likely AI-generated{% else %}Likely a real photo{% endif %}</h1>
+
+    <p class="conf-label">Confidence <strong>{{ result.confidence | pct }}</strong></p>
+    <div class="bar" role="img" aria-label="Confidence {{ result.confidence | pct }}">
+      <div class="fill" style="width: {{ '%.1f'|format(result.confidence * 100) }}%"></div>
+    </div>
+    <p class="muted small">Confidence shows how far the model's score is from its decision threshold (50% = on the line). It is not a calibrated probability.</p>
+
+    {% if borderline %}
+    <p class="banner info">This score is close to the decision threshold. Treat the verdict as a coin flip.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Details</h2>
+  <dl class="details">
+    <div><dt>File</dt><dd>{{ filename }} <span class="muted">({{ size[0] }}×{{ size[1] }} px)</span></dd></div>
+    <div><dt>Model score P(AI)</dt><dd>{{ '%.3f'|format(result.prob_ai) }} <span class="muted">(decision threshold {{ '%.3f'|format(result.threshold) }})</span></dd></div>
+    <div><dt>Model</dt><dd>{{ result.model_name }}, version {{ result.model_version }}</dd></div>
+    <div><dt>Inference</dt><dd>{{ result.inference_mode }}, {{ '%.0f'|format(result.latency_ms) }} ms</dd></div>
+  </dl>
+</section>
+
+<section class="note">
+  <h2>Please read this caveat</h2>
+  <p>This is a statistical estimate, not proof. On our held-out test images the current model was right about 7 times in 10, and about 1 in 8 genuine
+  photos was wrongly flagged as AI-generated. Paintings, posters, collages and heavily edited photos are especially unreliable. Do not use this verdict
+  alone to accuse anyone of faking an image.</p>
+</section>
+
+<p class="actions">
+  <a class="btn" href="{{ url_for('main.index') }}">Check another image</a>
+  <a class="btn btn-secondary" href="{{ url_for('main.history') }}">View history</a>
+</p>
+{% endblock %}

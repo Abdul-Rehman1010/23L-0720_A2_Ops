@@ -7,7 +7,7 @@ serving only share preprocessing.resize.
 """
 import argparse
 
-from keras import Input, Model, applications, layers, metrics, models, optimizers
+from keras import Input, Model, applications, layers, metrics, optimizers
 
 from visionguard import config
 from visionguard.preprocessing import IMG_SIZE

@@ -1,5 +1,4 @@
 """Bootstrap 95% confidence intervals for validation ROC-AUC of every finished run (validation data only)."""
-import sys
 from pathlib import Path
 
 import numpy as np

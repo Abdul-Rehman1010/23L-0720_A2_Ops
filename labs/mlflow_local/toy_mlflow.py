@@ -6,11 +6,12 @@ Remote settings (MLFLOW_TRACKING_URI / _USERNAME / _PASSWORD) come from environm
 variables, loaded from the git-ignored .env file; nothing secret is written in code.
 """
 import argparse
-import sys
 import os
+import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import mlflow

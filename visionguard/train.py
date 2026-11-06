@@ -18,10 +18,16 @@ import pandas as pd
 from visionguard import config
 from visionguard.callbacks import MLflowEpochLogger, best_epoch, training_callbacks
 from visionguard.data import make_dataset
-from visionguard.metrics import (classification_metrics, plot_confusion, plot_curves, plot_roc,
-                                 predict_split)
-from visionguard.models import (BACKBONES, build_cnn, build_transfer, compile_model, param_counts,
-                                trainable_layers, unfreeze)
+from visionguard.metrics import classification_metrics, plot_confusion, plot_curves, plot_roc, predict_split
+from visionguard.models import (
+    BACKBONES,
+    build_cnn,
+    build_transfer,
+    compile_model,
+    param_counts,
+    trainable_layers,
+    unfreeze,
+)
 from visionguard.preprocessing import IMG_SIZE
 
 
