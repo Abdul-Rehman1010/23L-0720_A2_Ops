@@ -86,6 +86,7 @@ def table(runs):
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")   # MLflow prints an emoji link on run end
     ap = argparse.ArgumentParser()
     ap.add_argument("--run")
     ap.add_argument("--label", default=None)
