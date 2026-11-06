@@ -139,11 +139,10 @@ def main():
         mlflow.log_artifact(str(out / "val_preds.csv"), "predictions")
         if args.finetune:
             mlflow.log_artifact(str(out / "trainable_layers.json"), "model_info")
-        if args.tracking == "autolog":
+        mlflow.log_artifact(str(out / "model.keras"), "model_file")      # the trained Keras model, visible in the Artifacts tab
+        if args.tracking == "manual":
             # DagsHub rejects log_model on a run that already has autolog metrics (log_batch BAD_REQUEST)
-            mlflow.log_artifact(str(out / "model.keras"), "model_file")
-        else:
-            mlflow.keras.log_model(model, name="model")
+            mlflow.keras.log_model(model, name="model")                  # also registered-model compatible
         mlflow.end_run()
 
     print("\nRESULT", json.dumps({"name": args.name, **{k: round(float(v), 4) for k, v in final.items()}}))

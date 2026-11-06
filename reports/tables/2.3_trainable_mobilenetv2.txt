@@ -1,7 +1,7 @@
 STAGE A (backbone frozen): 1 trainable layers, 1,281 trainable / 2,259,265 params
   - p_ai
 
-STAGE B (last block unfrozen, BatchNorm kept frozen): 7 backbone layers + head = 5 trainable layers, 880,321 trainable / 2,259,265 params
+STAGE B (last block unfrozen, BatchNorm kept frozen): 4 backbone layers + head = 5 trainable layers, 880,321 trainable / 2,259,265 params
   - p_ai
   - mobilenetv2_1.00_160/block_16_expand
   - mobilenetv2_1.00_160/block_16_depthwise
