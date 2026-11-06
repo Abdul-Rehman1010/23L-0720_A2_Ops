@@ -43,6 +43,8 @@ GRID = {
     "R6_mnv2_finetune":  variant(finetune=True),
     "R7_effb0_frozen":   variant(model="efficientnetb0"),
     "R2_mnv2_autolog":   variant(tracking="autolog"),
+    # best Keras Tuner trial (T1): lr, dropout and unfrozen layers changed together, on purpose
+    "R8_mnv2_tuned":     variant(lr="3.8e-4", dropout=0.1, initial_unfreeze_last_n=10),
 }
 
 

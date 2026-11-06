@@ -7,6 +7,11 @@ N = 0 means a frozen backbone), trains briefly with early stopping and is scored
 """
 import argparse
 import sys
+from pathlib import Path
+
+if "--summary" in sys.argv:      # print saved results without importing TensorFlow
+    print((Path(__file__).resolve().parents[1] / "reports" / "tables" / "2.7_vg_tuner.md").read_text(encoding="utf-8"))
+    raise SystemExit
 
 import keras
 import keras_tuner as kt

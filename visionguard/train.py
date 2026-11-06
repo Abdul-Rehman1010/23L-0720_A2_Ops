@@ -40,6 +40,8 @@ def parse_args():
     ap.add_argument("--finetune-lr", type=float, default=1e-5)
     ap.add_argument("--finetune-epochs", type=int, default=20)
     ap.add_argument("--unfreeze-last-n", type=int, default=None)
+    ap.add_argument("--initial-unfreeze-last-n", type=int, default=0,
+                    help="train with the last N backbone layers unfrozen from the start (tuner setting)")
     ap.add_argument("--seed", type=int, default=config.SEED)
     ap.add_argument("--tracking", choices=["none", "manual", "autolog"], default="none")
     return ap.parse_args()
@@ -72,6 +74,8 @@ def main():
         model = build_cnn(args.img_size, dropout)
     else:
         model = build_transfer(args.model, args.img_size, dropout)
+    if args.initial_unfreeze_last_n:
+        unfreeze(model, last_n=args.initial_unfreeze_last_n)
     compile_model(model, args.lr)
     counts_a = param_counts(model)
 

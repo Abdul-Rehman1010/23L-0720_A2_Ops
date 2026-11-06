@@ -7,6 +7,10 @@ import argparse
 import sys
 from pathlib import Path
 
+if "--summary" in sys.argv:      # print saved results without importing TensorFlow
+    print((Path(__file__).resolve().parents[1] / "reports" / "tables" / "2.7_toy_tuner.md").read_text(encoding="utf-8"))
+    raise SystemExit
+
 import keras
 import keras_tuner as kt
 from keras import layers, optimizers
