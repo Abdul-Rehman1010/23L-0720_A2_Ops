@@ -28,7 +28,7 @@ jobs:
             requirements-base.txt
             requirements-lock.txt
 
-      - name: Install dependencies (no TensorFlow: the tests use a fake model)
+      - name: Install dependencies (TensorFlow is not needed, the tests use a fake model)
         run: pip install -r requirements-dev.txt -c requirements-lock.txt
 
       - name: Lint with ruff
