@@ -1,0 +1,56 @@
+# VisionGuard: web app + PostgreSQL. One command starts everything:   docker compose up -d --build
+# All passwords come from the untracked .env file (copy .env.example to .env first).
+name: 23l-0720_a2_ops
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data      # named volume: the rows survive `docker compose down`
+    healthcheck:
+      # "healthy" = the server accepts connections. $$ keeps the variable for the container's shell (Compose would otherwise expand it).
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    # There is deliberately NO "ports:" entry. Only containers on this Compose network can reach the database
+    # (the web app uses the host name "db"); nothing on the host or the internet can.
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 23l-0720_a2_ops-web:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy             # start only after Postgres answered its health check
+    environment:
+      # Listed one by one instead of `env_file: .env`, so only what the web app needs enters the container
+      # (the DagsHub token in .env, for example, never does).
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env (host name must be db)}
+      MODEL_PATH: /app/models/champion.keras
+      THRESHOLD: ${THRESHOLD:-}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-5}
+      DISPLAY_TZ: ${DISPLAY_TZ:-Asia/Karachi}
+      INFERENCE_MODE: ${INFERENCE_MODE:-local}
+      MODEL_API_URL: ${MODEL_API_URL:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+    ports:
+      - "127.0.0.1:8000:8000"                  # reachable from this computer only, not from the network
+    volumes:
+      # The model is MOUNTED, not baked in: swapping the registry champion needs no rebuild, the image stays small
+      # and identical for everyone, and no DagsHub credentials are needed inside the container.
+      - ./models:/app/models:ro
+    cap_drop: [ALL]                            # the app needs no Linux capabilities
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  pgdata:

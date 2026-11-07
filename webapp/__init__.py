@@ -36,8 +36,9 @@ def create_app(settings: Settings | None = None, predictor=None, store=None) -> 
     app.debug = settings.debug
 
     # Both are created ONCE here (at start-up), never per request. A failure raises, so the process stops with a clear message.
-    app.extensions["predictor"] = predictor or make_predictor(settings)
+    # The database comes first: a wrong address or password fails in a second instead of after the model has loaded.
     app.extensions["store"] = store or HistoryStore(settings.database_url)
+    app.extensions["predictor"] = predictor or make_predictor(settings)
 
     info = app.extensions["predictor"].info()
     log.info("model: %s v%s (%s inference, threshold %.3f)", info["model_name"], info["model_version"],

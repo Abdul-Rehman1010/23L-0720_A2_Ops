@@ -1,0 +1,6 @@
+# Files that Docker and CI read must keep Unix line endings even when edited on Windows
+Dockerfile* text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.dockerignore text eol=lf

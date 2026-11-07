@@ -1,0 +1,4 @@
+# What CI (and a contributor) installs to lint and test: no TensorFlow needed because the tests use a fake model.
+-r requirements-base.txt
+pytest==9.2.0
+ruff==0.17.3

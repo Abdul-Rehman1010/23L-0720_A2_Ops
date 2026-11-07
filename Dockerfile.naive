@@ -1,0 +1,16 @@
+# The "before" image for Task 6.4: how a first attempt usually looks. Not used by Compose.
+#   docker build -f Dockerfile.naive -t 23l-0720_a2_ops-web:before .
+# Differences from ./Dockerfile (each one is a reason the image is bigger or slower to rebuild):
+#   - full python:3.12 image instead of python:3.12-slim
+#   - full `tensorflow` package instead of `tensorflow-cpu`
+#   - pip keeps its download cache inside the image (no --no-cache-dir)
+#   - the whole project is copied BEFORE installing, so any code change reinstalls every package
+#   - runs as root and has no health check
+FROM python:3.12
+
+WORKDIR /app
+COPY . .
+RUN pip install tensorflow==2.21.0 keras==3.15.1 && pip install -r requirements-base.txt
+
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--threads", "4", "--timeout", "120", "webapp:create_app()"]

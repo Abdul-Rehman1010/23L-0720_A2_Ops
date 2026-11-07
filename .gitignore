@@ -1,6 +1,8 @@
-# environments and secrets
+# environments and secrets (also backups such as .env.bak; only the example file is committed)
 .venv/
 .env
+.env.*
+!.env.example
 .dvc/config.local
 # data (tracked by DVC)
 /data/raw

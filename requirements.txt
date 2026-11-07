@@ -1,0 +1,6 @@
+# What the Docker image installs: the web app packages plus the CPU-only TensorFlow build.
+# tensorflow-cpu is the same code as `tensorflow` without the GPU kernels, so the predictions are identical
+# but the wheel and the image are much smaller (see report/notes/task6.md). Versions match the training environment.
+-r requirements-base.txt
+tensorflow-cpu==2.21.0
+keras==3.15.1

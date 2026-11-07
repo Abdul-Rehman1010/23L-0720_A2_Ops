@@ -1,0 +1,63 @@
+name: CI
+
+# Runs on every push and pull request: lint, unit tests, and a Docker build (nothing is pushed anywhere).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The workflow only needs to read the repository. No secrets are used anywhere in this file:
+# if one were ever needed it would live in GitHub -> Settings -> Secrets and variables -> Actions
+# (encrypted, masked in logs) and be referenced as ${{ secrets.NAME }}, never written here.
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            requirements-base.txt
+            requirements-lock.txt
+
+      - name: Install dependencies (no TensorFlow: the tests use a fake model)
+        run: pip install -r requirements-dev.txt -c requirements-lock.txt
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run the tests
+        run: pytest -q
+
+  docker-build:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the web image (not pushed)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          tags: 23l-0720_a2_ops-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-test the image
+        run: |
+          docker run --rm --entrypoint python 23l-0720_a2_ops-web:ci -c "import tensorflow as tf, flask, sqlalchemy; print('tensorflow', tf.__version__)"
+          test "$(docker run --rm --entrypoint id 23l-0720_a2_ops-web:ci -u)" = "10001"
+          echo "container runs as the non-root user 10001"
