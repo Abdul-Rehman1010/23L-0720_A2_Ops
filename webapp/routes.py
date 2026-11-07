@@ -1,6 +1,5 @@
 """Routes: upload page, prediction result, history, health check, and friendly error pages."""
 import logging
-from datetime import timezone
 
 from flask import Blueprint, current_app, jsonify, render_template, request
 from sqlalchemy.exc import SQLAlchemyError
@@ -93,9 +92,10 @@ def _error_page(status: int, title: str, message: str):
 def register(app):
     app.register_blueprint(bp)
 
-    @app.template_filter("utc")
-    def utc_filter(value):
-        return value.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    @app.template_filter("localtime")
+    def localtime_filter(value):
+        # rows are stored in UTC; convert to the configured display zone (DISPLAY_TZ, default Asia/Karachi) only here
+        return value.astimezone(current_app.config["SETTINGS"].tz).strftime("%Y-%m-%d %H:%M:%S %Z")
 
     @app.template_filter("pct")
     def pct_filter(value):

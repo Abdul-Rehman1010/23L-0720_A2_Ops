@@ -1,6 +1,6 @@
 """Database trail (Task 5): one permanent row per prediction.
 
-Answers: what was decided (label, confidence, P(AI), threshold), when (created_at, UTC), by which model
+Answers: what was decided (label, confidence, P(AI), threshold), when (created_at, stored in UTC and shown in DISPLAY_TZ), by which model
 (model_name, model_version, inference_mode). The same code runs on SQLite locally and on PostgreSQL in Docker
 Compose: only the DATABASE_URL differs. The uploaded image itself is never stored, only its SHA-256 fingerprint.
 """

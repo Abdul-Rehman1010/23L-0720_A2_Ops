@@ -106,6 +106,45 @@ def test_history_empty_then_paginated(client, app):
     assert client.get("/history?page=999").status_code == 200           # out-of-range page is clamped
 
 
+def _row_at_utc(app):
+    """Insert one history row with a known UTC time: 2026-11-06 20:05:07 UTC."""
+    from datetime import datetime, timezone
+
+    from webapp.db import Prediction
+    store = app.extensions["store"]
+    with store._session() as session:
+        session.add(Prediction(created_at=datetime(2026, 11, 6, 20, 5, 7, tzinfo=timezone.utc), original_filename="t.jpg",
+                               image_sha256="0" * 64, label="ai", confidence=0.9, prob_ai=0.9, threshold=0.75,
+                               model_name="m", model_version="1", inference_mode="local", latency_ms=1.0))
+        session.commit()
+
+
+def test_history_times_shown_in_display_timezone(client, app):
+    _row_at_utc(app)                                   # stored as UTC, default display zone is Asia/Karachi (UTC+5)
+    page = client.get("/history").data
+    assert b"2026-11-07 01:05:07 PKT" in page
+    assert b"UTC" not in page.split(b"<tbody")[1].split(b"</tbody>")[0]
+
+
+def test_history_time_zone_can_be_switched_to_utc(settings):
+    from dataclasses import replace
+
+    from webapp import create_app
+    from webapp.db import HistoryStore
+    utc_settings = replace(settings, display_tz="UTC")
+    app = create_app(settings=utc_settings, predictor=FakePredictor(), store=HistoryStore(utc_settings.database_url))
+    _row_at_utc(app)
+    assert b"2026-11-06 20:05:07 UTC" in app.test_client().get("/history").data
+
+
+def test_invalid_display_timezone_fails_fast(settings):
+    from dataclasses import replace
+
+    import pytest
+    with pytest.raises(ValueError, match="DISPLAY_TZ"):
+        replace(settings, display_tz="Mars/Olympus")
+
+
 def test_uploaded_bytes_never_touch_disk(client, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     before = {p.name for p in tmp_path.iterdir()}

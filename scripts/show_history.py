@@ -5,6 +5,7 @@ Works the same on SQLite (local) and PostgreSQL (Compose).
 """
 import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy.engine import make_url
@@ -25,11 +26,13 @@ def main():
     store = HistoryStore(settings.database_url)
     print(f"database: {make_url(settings.database_url).render_as_string(hide_password=True)}")
     print(f"total rows: {store.count()} (showing the newest {args.limit})\n")
-    header = f"{'id':>3}  {'created_at (UTC)':<19}  {'file':<22}  {'label':<5}  {'conf':>6}  {'P(AI)':>6}  {'model':<6}  {'mode':<6}  {'ms':>5}"
+    tz = settings.tz
+    tzname = datetime.now(tz).strftime("%Z")
+    header = f"{'id':>3}  {'created_at (' + tzname + ')':<19}  {'file':<22}  {'label':<5}  {'conf':>6}  {'P(AI)':>6}  {'model':<6}  {'mode':<6}  {'ms':>5}"
     print(header)
     print("-" * len(header))
     for r in store.page(1, args.limit):
-        print(f"{r['id']:>3}  {r['created_at']:%Y-%m-%d %H:%M:%S}  {r['original_filename'][:22]:<22}  {r['label']:<5}  "
+        print(f"{r['id']:>3}  {r['created_at'].astimezone(tz):%Y-%m-%d %H:%M:%S}  {r['original_filename'][:22]:<22}  {r['label']:<5}  "
               f"{r['confidence']:>6.1%}  {r['prob_ai']:>6.3f}  v{r['model_version']:<5}  {r['inference_mode']:<6}  {r['latency_ms']:>5.0f}")
 
 

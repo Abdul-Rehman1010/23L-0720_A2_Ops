@@ -2,10 +2,12 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from visionguard import config
 
 DEFAULT_DB = "sqlite:///history.db"
+DEFAULT_TZ = "Asia/Karachi"      # shown on the History page; override with DISPLAY_TZ (e.g. "UTC")
 
 
 def _float_or_none(value: str | None) -> float | None:
@@ -22,6 +24,18 @@ class Settings:
     model_api_url: str
     model_api_key: str
     debug: bool
+    display_tz: str = DEFAULT_TZ     # only for showing times; the database always stores UTC
+
+    def __post_init__(self):
+        try:
+            ZoneInfo(self.display_tz)
+        except (ZoneInfoNotFoundError, ValueError):
+            raise ValueError(f"DISPLAY_TZ={self.display_tz!r} is not a valid time zone name "
+                             "(use an IANA name such as 'Asia/Karachi' or 'UTC')") from None
+
+    @property
+    def tz(self) -> ZoneInfo:
+        return ZoneInfo(self.display_tz)
 
     @classmethod
     def from_env(cls, env=None) -> "Settings":
@@ -38,6 +52,7 @@ class Settings:
             model_api_url=env.get("MODEL_API_URL", ""),
             model_api_key=env.get("MODEL_API_KEY", ""),
             debug=(env.get("FLASK_DEBUG") or "0").lower() in ("1", "true", "yes", "on"),
+            display_tz=env.get("DISPLAY_TZ") or DEFAULT_TZ,
         )
 
     @property

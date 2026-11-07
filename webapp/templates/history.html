@@ -20,7 +20,7 @@
       {% for r in rows %}
         <tr>
           <td>{{ r.id }}</td>
-          <td class="nowrap">{{ r.created_at | utc }}</td>
+          <td class="nowrap">{{ r.created_at | localtime }}</td>
           <td class="file" title="{{ r.original_filename }}">{{ r.original_filename }}</td>
           <td><span class="badge badge-{{ r.label }}">{% if r.label == 'ai' %}AI-generated{% else %}Real{% endif %}</span></td>
           <td class="num">{{ r.confidence | pct }}</td>
