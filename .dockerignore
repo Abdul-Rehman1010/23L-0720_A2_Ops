@@ -6,8 +6,10 @@
 .dvc/config.local
 *.db
 
-# Version control, editors, caches
+# Version control, DVC (its cache holds a full copy of the dataset, ~740 MB), editors, caches
 .git
+.dvc
+.dvcignore
 .github
 .gitignore
 .vscode

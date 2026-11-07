@@ -37,8 +37,12 @@ class ValidatedImage:
 
 
 def sanitize_filename(raw: str | None) -> str:
-    """Strip directories, odd characters and leading dots; fall back to a neutral name."""
-    return secure_filename(raw or "") or "upload"
+    """Strip directories, odd characters and leading dots; fall back to a neutral name.
+
+    Backslashes are turned into slashes first: werkzeug only treats "\\" as a folder separator when the server itself
+    runs on Windows, but browsers on Windows can send names like "C:\\Users\\me\\pic.jpg" to a Linux server (Docker).
+    Doing it here gives the same result on every platform."""
+    return secure_filename((raw or "").replace("\\", "/")) or "upload"
 
 
 def validate_upload(file, max_bytes: int) -> ValidatedImage:

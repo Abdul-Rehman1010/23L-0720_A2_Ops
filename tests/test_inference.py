@@ -32,6 +32,7 @@ def test_decide_rejects_bad_threshold():
     ("holiday photo.JPG", "holiday_photo.JPG"),
     ("../../etc/passwd.png", "etc_passwd.png"),
     ("..\\..\\windows\\evil.jpg", "windows_evil.jpg"),
+    ("C:\\Users\\me\\pic.jpg", "C_Users_me_pic.jpg"),
     ("<script>alert(1)</script>.jpg", "scriptalert1_script.jpg"),
     ("", "upload"),
     (None, "upload"),
