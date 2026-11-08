@@ -29,3 +29,6 @@ labs/tuner_runs/
 samples/bad/too_big.jpg
 # local app database
 history.db
+
+# private keys (e.g. the AWS key pair) must never be committed
+*.pem

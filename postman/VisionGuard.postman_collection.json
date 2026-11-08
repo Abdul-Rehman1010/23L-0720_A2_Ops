@@ -1,0 +1,365 @@
+{
+  "info": {
+    "name": "23L-0720_A2_Ops VisionGuard model API",
+    "description": "Task 7. Set the environment variables base_url (no trailing slash) and api_key. The key is NOT stored in this file. For the file requests, re-select the image from samples/ in Postman if it is not found.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "api_key",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 Health (public, no key)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('model is loaded', () => { const b = pm.response.json(); pm.expect(b.status).to.eql('ok'); pm.expect(b.model_loaded).to.eql(true); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2 Predict - real photo (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "const body = pm.response.json();",
+              "pm.test('known sample is classified as real', () => pm.expect(body.label).to.eql('real'));",
+              "pm.test('confidence is between 50% and 100%', () => pm.expect(body.confidence).to.be.within(0.5, 1));",
+              "pm.test('response names the model version and a request id', () => { pm.expect(body.model_version).to.be.a('string'); pm.expect(body.request_id).to.be.a('string'); });",
+              "pm.test('no inference_mode leaks from the service', () => pm.expect(body).to.not.have.property('inference_mode'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/known_real.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3 Predict - AI image (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "const body = pm.response.json();",
+              "pm.test('known sample is classified as ai', () => pm.expect(body.label).to.eql('ai'));",
+              "pm.test('confidence is between 50% and 100%', () => pm.expect(body.confidence).to.be.within(0.5, 1));",
+              "pm.test('response names the model version and a request id', () => { pm.expect(body.model_version).to.be.a('string'); pm.expect(body.request_id).to.be.a('string'); });",
+              "pm.test('no inference_mode leaks from the service', () => pm.expect(body).to.not.have.property('inference_mode'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/known_ai.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4 Predict - no API key (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 401', () => pm.response.to.have.status(401));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('error code is unauthorized', () => pm.expect(pm.response.json().error).to.eql('unauthorized'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/known_real.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "5 Predict - wrong API key (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 401', () => pm.response.to.have.status(401));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('error code is unauthorized', () => pm.expect(pm.response.json().error).to.eql('unauthorized'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "this-is-not-the-key",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/known_real.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6 Predict - corrupt image (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 400', () => pm.response.to.have.status(400));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('error code is bad_request', () => pm.expect(pm.response.json().error).to.eql('bad_request'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/bad/corrupt.jpg"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7 Predict - wrong file type (415)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 415', () => pm.response.to.have.status(415));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('error code is unsupported_media_type', () => pm.expect(pm.response.json().error).to.eql('unsupported_media_type'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/bad/notes.txt"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8 Predict - file too large (413)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 413', () => pm.response.to.have.status(413));",
+              "pm.test('response is JSON', () => pm.response.to.be.json);",
+              "pm.test('error code is file_too_large', () => pm.expect(pm.response.json().error).to.eql('file_too_large'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": "samples/bad/too_big.jpg"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

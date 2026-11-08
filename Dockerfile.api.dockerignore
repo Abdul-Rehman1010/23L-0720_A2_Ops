@@ -1,0 +1,16 @@
+# Build context for Dockerfile.api: BuildKit uses this file instead of .dockerignore for this Dockerfile,
+# because the web image's ignore list excludes models/ and model_api/, which this image needs.
+# Everything is excluded by default; only the files the Dockerfile copies are let back in.
+*
+
+# secrets and state must never be let in, even by accident
+!requirements-api.txt
+!requirements-lock.txt
+!visionguard/
+!model_api/
+!models/champion.keras
+!models/champion.json
+
+# caches
+**/__pycache__
+**/*.pyc

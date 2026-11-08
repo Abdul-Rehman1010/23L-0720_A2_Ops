@@ -1,0 +1,38 @@
+# VisionGuard model API image (Task 7). Same recipe as the web image (slim base, CPU-only TensorFlow, dependencies
+# before source, non-root user, health check) with two differences:
+#   * the champion model is BAKED IN: managed container platforms have no persistent volume to mount it from, and a
+#     baked-in model makes the image tag identify the exact model version that answers requests;
+#   * it listens on $PORT (default 8080), because hosting platforms tell the container which port to use.
+# It contains no secrets: MODEL_API_KEY is injected by the platform at run time (see Dockerfile.api.dockerignore).
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    TF_CPP_MIN_LOG_LEVEL=2 \
+    PORT=8080
+
+RUN groupadd --system --gid 10001 app \
+    && useradd --system --uid 10001 --gid app --create-home --home-dir /home/app --shell /usr/sbin/nologin app
+
+WORKDIR /app
+
+# Layer 1: dependencies (constraints = the exact versions used in training)
+COPY requirements-api.txt requirements-lock.txt ./
+RUN pip install --no-cache-dir -r requirements-api.txt -c requirements-lock.txt
+
+# Layer 2: code, then the model (15 MB, changes only when a new champion is promoted)
+COPY visionguard ./visionguard
+COPY model_api ./model_api
+COPY models/champion.keras models/champion.json ./models/
+
+USER app
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=6s --start-period=90s --retries=3 \
+    CMD ["python", "-c", "import os, sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%s/health' % os.environ.get('PORT', '8080'), timeout=5).status == 200 else 1)"]
+
+# Shell form on purpose, so that ${PORT} is expanded; `exec` makes gunicorn PID 1 (it receives the platform's stop signal).
+# One worker + 4 threads: the model is in memory once, predictions are serialised by a lock inside the predictor.
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT} --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile - 'model_api:create_app()'"]

@@ -1,0 +1,45 @@
+# Cloud deployment of the model API (Task 7): runs on the AWS EC2 VM.
+#   api    the model service (Dockerfile.api, champion model baked in). Reachable ONLY from the proxy: no published port.
+#   caddy  the public entry point: HTTPS on 443 (certificate obtained and renewed automatically), HTTP 80 redirects to it.
+#
+# The two values below come from a file named .env that exists ONLY on the VM (never in git, never in the image):
+#   MODEL_API_KEY=<the secret API key>
+#   API_HOST=<public host name of the VM, e.g. 13-232-1-2.sslip.io>
+#
+#   docker compose -f docker-compose.api.yml up -d --build
+name: 23l-0720_a2_ops_api
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: 23l-0720_a2_ops-api:latest
+    environment:
+      MODEL_API_KEY: ${MODEL_API_KEY:?Create .env with MODEL_API_KEY=<secret> (see docker-compose.api.yml)}
+    expose:
+      - "8080"                      # visible to other containers on this network only
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      API_HOST: ${API_HOST:?Create .env with API_HOST=<host name of the VM> (see docker-compose.api.yml)}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data            # keeps the certificate across restarts (Let's Encrypt rate limits are strict)
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

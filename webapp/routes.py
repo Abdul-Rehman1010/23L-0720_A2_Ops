@@ -6,8 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 
 from visionguard.inference import PredictorError
-
-from .validation import UploadError, thumbnail_data_uri, validate_upload
+from visionguard.validation import UploadError, thumbnail_data_uri, validate_upload
 
 log = logging.getLogger("visionguard")
 bp = Blueprint("main", __name__)

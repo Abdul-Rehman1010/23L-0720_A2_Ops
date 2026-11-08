@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from visionguard.inference import decide
-from webapp.validation import sanitize_filename
+from visionguard.validation import sanitize_filename
 
 ROOT = Path(__file__).resolve().parents[1]
 

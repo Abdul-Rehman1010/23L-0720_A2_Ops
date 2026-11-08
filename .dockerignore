@@ -37,3 +37,6 @@ models
 
 # Docs
 *.md
+
+# private keys
+*.pem

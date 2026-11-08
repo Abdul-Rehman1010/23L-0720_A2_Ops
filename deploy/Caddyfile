@@ -1,0 +1,12 @@
+# Public HTTPS entry point of the model API. {$API_HOST} is the host name given in docker-compose.api.yml.
+# Caddy obtains a certificate for that name from Let's Encrypt by itself (needs ports 80 and 443 open) and renews it.
+{$API_HOST} {
+	# Refuse absurdly large bodies before they reach the app. The app's own limit is 5 MB and answers with a clear
+	# JSON 413 for anything between 5 MB and this ceiling.
+	request_body {
+		max_size 10MB
+	}
+
+	# Caddy adds X-Forwarded-For (the caller's address) for the API's request log.
+	reverse_proxy api:8080
+}
