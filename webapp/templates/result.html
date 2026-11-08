@@ -29,7 +29,8 @@
     <div><dt>File</dt><dd>{{ filename }} <span class="muted">({{ size[0] }}×{{ size[1] }} px)</span></dd></div>
     <div><dt>Model score P(AI)</dt><dd>{{ '%.3f'|format(result.prob_ai) }} <span class="muted">(decision threshold {{ '%.3f'|format(result.threshold) }})</span></dd></div>
     <div><dt>Model</dt><dd>{{ result.model_name }}, version {{ result.model_version }}</dd></div>
-    <div><dt>Inference</dt><dd>{{ result.inference_mode }}, {{ '%.0f'|format(result.latency_ms) }} ms</dd></div>
+    <div><dt>Inference</dt><dd>{{ result.inference_mode }}, {{ '%.0f'|format(result.latency_ms) }} ms{% if result.api_latency_ms is defined and result.api_latency_ms is not none %} <span class="muted">(model {{ '%.0f'|format(result.api_latency_ms) }} ms, the rest is network)</span>{% endif %}</dd></div>
+    {% if result.api_request_id %}<div><dt>API request id</dt><dd>{{ result.api_request_id }}</dd></div>{% endif %}
   </dl>
 </section>
 

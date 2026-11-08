@@ -42,6 +42,7 @@ services:
       INFERENCE_MODE: ${INFERENCE_MODE:-local}
       MODEL_API_URL: ${MODEL_API_URL:-}
       MODEL_API_KEY: ${MODEL_API_KEY:-}
+      MODEL_API_TIMEOUT: ${MODEL_API_TIMEOUT:-10}
     ports:
       - "127.0.0.1:8000:8000"                  # reachable from this computer only, not from the network
     volumes:

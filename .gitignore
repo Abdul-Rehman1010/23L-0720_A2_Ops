@@ -32,3 +32,6 @@ history.db
 
 # private keys (e.g. the AWS key pair) must never be committed
 *.pem
+
+# Task 8 demo images copied from the test split of the Kaggle dataset (not republished)
+/samples/task8/

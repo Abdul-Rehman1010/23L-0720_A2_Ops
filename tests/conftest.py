@@ -23,7 +23,7 @@ class FakePredictor:
     def healthy(self):
         return self._healthy
 
-    def predict_bytes(self, data):
+    def predict_bytes(self, data, filename=None):
         label, confidence = decide(self.prob_ai, self.threshold)
         return {"label": label, "confidence": confidence, "prob_ai": self.prob_ai, "threshold": self.threshold,
                 "model_name": "fake-model", "model_version": "7", "inference_mode": self.mode, "latency_ms": 12.0}

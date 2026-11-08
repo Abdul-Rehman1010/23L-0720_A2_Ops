@@ -21,7 +21,11 @@ def make_predictor(settings: Settings):
     if settings.inference_mode == "local":
         from visionguard.inference import LocalPredictor  # imports TensorFlow, so only when really needed
         return LocalPredictor(settings.model_path, settings.threshold)
-    raise ValueError(f"INFERENCE_MODE={settings.inference_mode!r} is not supported yet (use 'local')")
+    if settings.inference_mode == "remote":
+        # The cloud model API decides label, confidence and threshold itself; THRESHOLD and MODEL_PATH are not used here.
+        from visionguard.remote import RemotePredictor
+        return RemotePredictor(settings.model_api_url, settings.model_api_key, timeout=settings.model_api_timeout)
+    raise ValueError(f"INFERENCE_MODE={settings.inference_mode!r} is not supported (use 'local' or 'remote')")
 
 
 def create_app(settings: Settings | None = None, predictor=None, store=None) -> Flask:

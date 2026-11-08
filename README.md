@@ -29,6 +29,21 @@ Open http://localhost:8000 . Stop with `docker compose down` (add `-v` to also d
 The database is not published to the host: only the web container can reach it, by the service name `db`.
 The model file is mounted read-only from `models/`, so a new champion needs no image rebuild.
 
+### Use the cloud model API instead (Task 8)
+
+Set these in `.env`, then `docker compose up -d --build`:
+
+```
+INFERENCE_MODE=remote
+MODEL_API_URL=https://32-236-206-107.sslip.io
+MODEL_API_KEY=<the API key>
+```
+
+The web app then sends every upload to the cloud API (`visionguard/remote.py`) and still writes each verdict to PostgreSQL, with `inference_mode = remote` and the model version the API reports.
+The API decides label and threshold (`THRESHOLD` is ignored). Each call has a timeout (`MODEL_API_TIMEOUT`, default 10 s) and one retry after a connection error, a timeout or an HTTP 502/503/504; a wrong key is not retried.
+If the API is down the web app still starts, `/health` says `degraded`, and an upload shows a friendly "model service unavailable" page and saves nothing. The key is refused over plain `http://` (except to localhost).
+In remote mode the web container does not load TensorFlow at all.
+
 ## Model API in the cloud (Task 7)
 
 The champion model is also served as a small HTTP API on an AWS EC2 virtual machine (Docker Compose: the API plus a Caddy proxy that provides HTTPS).
@@ -63,7 +78,7 @@ flask --app webapp run --port 5000      # debug mode is off
 
 ```powershell
 ruff check .
-pytest -q          # 53 tests, no TensorFlow or model file needed
+pytest -q          # 88 tests, no TensorFlow or model file needed
 ```
 
 Settings (all environment variables) are documented in `.env.example`. Never commit `.env`.

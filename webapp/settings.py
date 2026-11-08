@@ -25,6 +25,7 @@ class Settings:
     model_api_key: str
     debug: bool
     display_tz: str = DEFAULT_TZ     # only for showing times; the database always stores UTC
+    model_api_timeout: float = 10.0  # seconds to wait for the model API's answer (remote mode only)
 
     def __post_init__(self):
         try:
@@ -53,6 +54,7 @@ class Settings:
             model_api_key=env.get("MODEL_API_KEY", ""),
             debug=(env.get("FLASK_DEBUG") or "0").lower() in ("1", "true", "yes", "on"),
             display_tz=env.get("DISPLAY_TZ") or DEFAULT_TZ,
+            model_api_timeout=float(env.get("MODEL_API_TIMEOUT") or 10),
         )
 
     @property

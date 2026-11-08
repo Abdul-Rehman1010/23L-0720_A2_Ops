@@ -42,7 +42,7 @@ def predict():
     # request.files raises 413 by itself when the body exceeds MAX_CONTENT_LENGTH
     image = validate_upload(request.files.get("image"), settings.max_upload_bytes)
     try:
-        result = predictor.predict_bytes(image.data)
+        result = predictor.predict_bytes(image.data, filename=image.filename)
     except PredictorError:
         log.exception("prediction failed for %s", image.filename)
         raise UploadError(502, "Model service unavailable", FRIENDLY[502][1]) from None
@@ -54,9 +54,11 @@ def predict():
         log.exception("could not save history row")
         saved = False
 
-    log.info("prediction file=%s sha=%s label=%s confidence=%.3f p_ai=%.3f model=v%s mode=%s %.0fms saved=%s",
+    # api_id is the model API's own request id (remote mode only): it is also in the cloud log, so the two logs can be matched
+    log.info("prediction file=%s sha=%s label=%s confidence=%.3f p_ai=%.3f model=v%s mode=%s %.0fms saved=%s api_id=%s",
              image.filename, image.sha256[:12], result["label"], result["confidence"], result["prob_ai"],
-             result["model_version"], result["inference_mode"], result["latency_ms"], saved)
+             result["model_version"], result["inference_mode"], result["latency_ms"], saved,
+             result.get("api_request_id") or "-")
     return render_template("result.html", result=result, filename=image.filename, saved=saved,
                            thumb=thumbnail_data_uri(image.data), size=(image.width, image.height),
                            borderline=abs(result["prob_ai"] - result["threshold"]) < 0.08, page="upload")
@@ -76,8 +78,8 @@ def history():
 @bp.get("/health")
 def health():
     predictor, store = _services()
+    model_ok, db_ok = predictor.healthy(), store.ping()      # healthy() first: in remote mode it refreshes what info() returns
     info = predictor.info()
-    model_ok, db_ok = predictor.healthy(), store.ping()
     body = {"status": "ok" if model_ok and db_ok else "degraded", "model_loaded": model_ok,
             "model_name": info["model_name"], "model_version": info["model_version"],
             "threshold": info["threshold"], "inference_mode": info["inference_mode"], "db_ok": db_ok}

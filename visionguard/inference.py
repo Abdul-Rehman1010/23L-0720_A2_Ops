@@ -82,7 +82,8 @@ class LocalPredictor:
     def healthy(self) -> bool:
         return self._model is not None
 
-    def predict_bytes(self, data: bytes) -> dict:
+    def predict_bytes(self, data: bytes, filename: str | None = None) -> dict:
+        """`filename` is accepted so that LocalPredictor and RemotePredictor are interchangeable; only the remote one needs it."""
         started = time.perf_counter()
         try:
             batch = self._preprocess(data, self.img_size)
