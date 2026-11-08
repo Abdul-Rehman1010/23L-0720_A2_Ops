@@ -12,6 +12,7 @@ It is an estimate from a small model (about 7 correct predictions in 10 on the h
 | Experiment tracking and model registry | DagsHub MLflow: https://dagshub.com/Abdul-Rehman1010/23L-0720_A2_Ops |
 | Web app (Flask) and prediction history | `webapp/` |
 | Containers | `Dockerfile`, `docker-compose.yml` |
+| Model API in the cloud (AWS) | `model_api/`, `Dockerfile.api`, `docker-compose.api.yml`, `postman/` |
 | Continuous integration | `.github/workflows/ci.yml` |
 
 ## Run everything with Docker (web app + PostgreSQL)
@@ -28,6 +29,27 @@ Open http://localhost:8000 . Stop with `docker compose down` (add `-v` to also d
 The database is not published to the host: only the web container can reach it, by the service name `db`.
 The model file is mounted read-only from `models/`, so a new champion needs no image rebuild.
 
+## Model API in the cloud (Task 7)
+
+The champion model is also served as a small HTTP API on an AWS EC2 virtual machine (Docker Compose: the API plus a Caddy proxy that provides HTTPS).
+
+| | |
+|---|---|
+| Base URL | https://32-236-206-107.sslip.io |
+| `GET /health` | public: model name, version and decision threshold |
+| `POST /predict` | multipart field `image` and header `X-API-Key`; returns label, confidence, P(AI), model version, request id |
+| Errors | JSON: 400 unreadable or missing image, 401 missing or wrong key, 413 over 5 MB, 415 wrong file type |
+
+```powershell
+curl.exe https://32-236-206-107.sslip.io/health
+curl.exe -H "X-API-Key: $env:MODEL_API_KEY" -F image=@samples\known_real.jpg https://32-236-206-107.sslip.io/predict
+```
+
+The key is a secret of the deployment and is not in this repository. The model is baked into the image (`Dockerfile.api`), so the image tag identifies the exact model version.
+A Postman collection with tests is in `postman/` (set the variables `base_url` and `api_key`).
+On the VM, `git pull` followed by `sudo docker compose -f docker-compose.api.yml up -d --build` redeploys (the git-ignored `models/champion.*` files are copied there with `scp`).
+The free AWS plan behind it ends on 2027-05-08, after which the URL stops answering.
+
 ## Run locally without Docker
 
 ```powershell
@@ -41,7 +63,7 @@ flask --app webapp run --port 5000      # debug mode is off
 
 ```powershell
 ruff check .
-pytest -q          # 32 tests, no TensorFlow or model file needed
+pytest -q          # 53 tests, no TensorFlow or model file needed
 ```
 
 Settings (all environment variables) are documented in `.env.example`. Never commit `.env`.
