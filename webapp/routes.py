@@ -1,4 +1,5 @@
 """Routes: upload page, prediction result, history, health check, and friendly error pages."""
+import hmac
 import logging
 
 from flask import Blueprint, current_app, jsonify, render_template, request
@@ -64,8 +65,21 @@ def predict():
                            borderline=abs(result["prob_ai"] - result["threshold"]) < 0.08, page="upload")
 
 
+def _history_allowed() -> bool:
+    """The History page lists every visitor's file names, so a public deployment can protect it with HISTORY_PASSWORD
+    (browser login dialog, any user name). Without that setting the page is open, as in local use."""
+    password = current_app.config["SETTINGS"].history_password
+    if not password:
+        return True
+    auth = request.authorization
+    return bool(auth and auth.password is not None and hmac.compare_digest(auth.password.encode(), password.encode()))
+
+
 @bp.get("/history")
 def history():
+    if not _history_allowed():
+        body, status = _error_page(401, "History is protected", "Enter the password to see the history. Any user name works.")
+        return body, status, {"WWW-Authenticate": 'Basic realm="VisionGuard history", charset="UTF-8"'}
     _, store = _services()
     page = max(request.args.get("page", 1, type=int), 1)
     total = store.count()

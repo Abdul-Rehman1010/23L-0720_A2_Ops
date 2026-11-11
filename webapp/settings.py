@@ -14,6 +14,16 @@ def _float_or_none(value: str | None) -> float | None:
     return float(value) if value not in (None, "") else None
 
 
+def normalise_database_url(url: str) -> str:
+    """Hosted PostgreSQL services (Neon, Render, Heroku) give URLs that start with postgres:// or postgresql://.
+    SQLAlchemy needs the driver in the scheme, and this project uses psycopg 3, so the scheme is completed here:
+    the URL from the provider can be pasted as it is. Other URLs (sqlite:///..., postgresql+psycopg://...) stay unchanged."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 @dataclass(frozen=True)
 class Settings:
     model_path: Path
@@ -26,6 +36,7 @@ class Settings:
     debug: bool
     display_tz: str = DEFAULT_TZ     # only for showing times; the database always stores UTC
     model_api_timeout: float = 10.0  # seconds to wait for the model API's answer (remote mode only)
+    history_password: str = ""       # empty = the History page is open (local use); set it on a public deployment
 
     def __post_init__(self):
         try:
@@ -47,7 +58,7 @@ class Settings:
         return cls(
             model_path=model_path,
             threshold=_float_or_none(env.get("THRESHOLD")),
-            database_url=env.get("DATABASE_URL") or DEFAULT_DB,
+            database_url=normalise_database_url(env.get("DATABASE_URL") or DEFAULT_DB),
             max_upload_mb=float(env.get("MAX_UPLOAD_MB") or 5),
             inference_mode=(env.get("INFERENCE_MODE") or "local").lower(),
             model_api_url=env.get("MODEL_API_URL", ""),
@@ -55,6 +66,7 @@ class Settings:
             debug=(env.get("FLASK_DEBUG") or "0").lower() in ("1", "true", "yes", "on"),
             display_tz=env.get("DISPLAY_TZ") or DEFAULT_TZ,
             model_api_timeout=float(env.get("MODEL_API_TIMEOUT") or 10),
+            history_password=env.get("HISTORY_PASSWORD", ""),
         )
 
     @property

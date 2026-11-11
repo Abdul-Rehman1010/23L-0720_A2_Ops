@@ -35,3 +35,6 @@ history.db
 
 # Task 8 demo images copied from the test split of the Kaggle dataset (not republished)
 /samples/task8/
+
+# generated deployment bundle (scripts/make_vercel_bundle.py)
+/build/

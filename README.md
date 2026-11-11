@@ -44,6 +44,11 @@ The API decides label and threshold (`THRESHOLD` is ignored). Each call has a ti
 If the API is down the web app still starts, `/health` says `degraded`, and an upload shows a friendly "model service unavailable" page and saves nothing. The key is refused over plain `http://` (except to localhost).
 In remote mode the web container does not load TensorFlow at all.
 
+### Optional: the web app on Vercel
+
+Because remote mode needs no TensorFlow, the web app also runs as a Vercel function. `python scripts/make_vercel_bundle.py` writes a deployable copy to `build/vercel` (the web app, the five small `visionguard` modules it imports, light requirements, the stylesheet in `public/`).
+Deploy it from that folder with `npx vercel --prod`. Set these environment variables in the Vercel project: `INFERENCE_MODE=remote`, `MODEL_API_URL`, `MODEL_API_KEY`, `DATABASE_URL` (a hosted PostgreSQL such as Neon, because a Vercel function has no persistent disk), `MAX_UPLOAD_MB=4` (Vercel accepts requests up to 4.5 MB) and, for a public site, `HISTORY_PASSWORD` (protects the History page with a login).
+
 ## Model API in the cloud (Task 7)
 
 The champion model is also served as a small HTTP API on an AWS EC2 virtual machine (Docker Compose: the API plus a Caddy proxy that provides HTTPS).
