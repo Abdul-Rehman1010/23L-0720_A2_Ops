@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Is this image AI-generated?</h1>
+  <p class="lead">Upload a picture and VisionGuard will estimate whether it is a real photo or was made by an image generator.</p>
+</section>
+
+<section class="card">
+  <form id="upload-form" action="{{ url_for('main.predict') }}" method="post" enctype="multipart/form-data"
+        data-max-bytes="{{ settings.max_upload_bytes }}">
+    <label class="dropzone" for="image" id="dropzone">
+      <span class="dz-icon" aria-hidden="true">⇪</span>
+      <span class="dz-title" id="dz-title">Choose an image</span>
+      <span class="dz-hint">JPG, PNG, WEBP or BMP, up to {{ '%g'|format(settings.max_upload_mb) }} MB</span>
+      <input type="file" id="image" name="image" accept=".jpg,.jpeg,.png,.webp,.bmp,image/jpeg,image/png,image/webp,image/bmp">
+    </label>
+    <img id="preview" class="preview" alt="Preview of the chosen image" hidden>
+    <p id="client-msg" class="client-msg" role="alert" hidden></p>
+    <button type="submit" class="btn" id="submit-btn">Analyse image</button>
+  </form>
+</section>
+
+<section class="note">
+  <h2>How to read the result</h2>
+  <ul>
+    <li><strong>The verdict is an estimate.</strong> The model looks at visual style, not at where the image came from, so it can be wrong in both directions.</li>
+    <li><strong>We prefer not to accuse real photos.</strong> The decision threshold is set so that few genuine photos are wrongly called AI, which means some AI images pass as real.</li>
+    <li><strong>Your image is not stored.</strong> It is analysed in memory; only the verdict, a fingerprint and the file name are kept in the history.</li>
+  </ul>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

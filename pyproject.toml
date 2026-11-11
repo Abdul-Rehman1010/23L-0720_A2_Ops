@@ -1,7 +1,7 @@
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = [".venv", "data", "runs", "mlruns"]
+extend-exclude = [".venv", "data", "runs", "mlruns", "deploy/vercel"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

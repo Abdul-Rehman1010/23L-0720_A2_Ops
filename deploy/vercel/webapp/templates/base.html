@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}VisionGuard{% endblock %} · VisionGuard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('main.index') }}">
+        <span class="brand-mark" aria-hidden="true">◎</span> VisionGuard
+      </a>
+      <nav aria-label="Main">
+        <a href="{{ url_for('main.index') }}" {% if page == 'upload' %}class="active" aria-current="page"{% endif %}>Upload</a>
+        <a href="{{ url_for('main.history') }}" {% if page == 'history' %}class="active" aria-current="page"{% endif %}>History</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <span>23L-0720_A2_Ops · VisionGuard</span>
+    <span>An estimate from a small model, not proof.</span>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

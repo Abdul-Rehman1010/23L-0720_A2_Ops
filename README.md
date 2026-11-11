@@ -46,8 +46,8 @@ In remote mode the web container does not load TensorFlow at all.
 
 ### Optional: the web app on Vercel
 
-Because remote mode needs no TensorFlow, the web app also runs as a Vercel function. `python scripts/make_vercel_bundle.py` writes a deployable copy to `build/vercel` (the web app, the five small `visionguard` modules it imports, light requirements, the stylesheet in `public/`).
-Deploy it from that folder with `npx vercel --prod`. Set these environment variables in the Vercel project: `INFERENCE_MODE=remote`, `MODEL_API_URL`, `MODEL_API_KEY`, `DATABASE_URL` (a hosted PostgreSQL such as Neon, because a Vercel function has no persistent disk), `MAX_UPLOAD_MB=4` (Vercel accepts requests up to 4.5 MB) and, for a public site, `HISTORY_PASSWORD` (protects the History page with a login).
+Because remote mode needs no TensorFlow, the web app also runs as a Vercel function. `scripts/make_vercel_bundle.py` generates a deployable copy in `deploy/vercel` (the web app, the five small `visionguard` modules it imports, light requirements, the stylesheet in `public/`); a test keeps it identical to the sources.
+In Vercel, import this GitHub repository and set the Root Directory to `deploy/vercel`. Set these environment variables in the Vercel project: `INFERENCE_MODE=remote`, `MODEL_API_URL`, `MODEL_API_KEY`, `DATABASE_URL` (a hosted PostgreSQL such as Neon, because a Vercel function has no persistent disk), `MAX_UPLOAD_MB=4` (Vercel accepts requests up to 4.5 MB) and, for a public site, `HISTORY_PASSWORD` (protects the History page with a login).
 
 ## Model API in the cloud (Task 7)
 
